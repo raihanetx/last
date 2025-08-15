@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roko Flux - E-commerce</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <!-- Font Awesome Icons Library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #8c52ff;
+            --primary-color-darker: #7444d9;
+            --primary-color-light: #e5d9ff;
+            --gap-border-and-card-mobile: 10px;
+            --gap-between-cards-mobile: 10px;
+            --gap-between-cards-desktop: 30px;
+        }
+        .hero-section { border-radius: 2rem; overflow: hidden; height: 300px; margin: 1rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); position: relative; }
+        .hero-slide { width: 100%; height: 100%; background: linear-gradient(45deg, var(--primary-color), #b59cff); border-radius: 2rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.875rem; font-weight: bold; }
+        .category-icon { display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; text-decoration: none; width: 75px; height: auto; padding: 1rem 0; flex-shrink: 0; border: 3px solid #e5e7eb; border-radius: 0.75rem; }
+        .category-icon:hover { transform: translateY(-5px); border-color: var(--primary-color); }
+        .category-icon i { font-size: 2.25rem; color: var(--primary-color); margin-bottom: 0; transition: all 0.3s ease; }
+        .category-icon span { font-size: 0.75rem; margin-top: 0.2rem; color: #374151; font-weight: 500; text-align: center; line-height: 1; transition: color 0.3s ease; }
+        .category-icon:hover i, .category-icon:hover span { color: var(--primary-color-darker); }
+        .category-scroll-container { display: flex; flex-wrap: nowrap; width: max-content; gap: 1.5rem; }
+        .horizontal-scroll { overflow-x: auto; scrollbar-width: none; }
+        .horizontal-scroll::-webkit-scrollbar { display: none; }
+        .smooth-scroll { scroll-behavior: smooth; }
+        .product-card { width: 170px; height: 280px; display: flex; flex-direction: column; flex-shrink: 0; border: 1px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden; position: relative; scroll-snap-align: start; transition: all 0.3s ease; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.07); }
+        .product-scroll-container { display: flex; width: max-content; padding-left: var(--gap-border-and-card-mobile); padding-right: var(--gap-border-and-card-mobile); gap: var(--gap-between-cards-mobile); }
+        @media (min-width: 768px) {
+            .category-scroll-container { gap: 2rem; }
+            .category-icon { width: 140px; padding: 1.25rem 0; }
+            .category-icon i { font-size: 4.4rem; }
+            .category-icon span { font-size: 1.125rem; margin-top: 0.5rem; }
+            .product-card { width: 280px; height: 350px; }
+            .product-scroll-container { padding-left: var(--gap-between-cards-desktop); padding-right: var(--gap-between-cards-desktop); gap: var(--gap-between-cards-desktop); }
+        }
+        @media (max-width: 767px) { html { font-size: 80%; } .hero-section { height: 180px; } .category-scroll-container { padding: 0 1rem; } }
+        .feature-card { transition: all 0.3s ease; }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
+        .category-badge { position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(255, 255, 255, 0.9); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; }
+        .footer-section { position: relative; overflow: hidden; }
+        .footer-section::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: linear-gradient(90deg, var(--primary-color), #b59cff); }
+        .footer-link { position: relative; transition: color 0.3s ease; }
+        .footer-link:hover { color: var(--primary-color); }
+        .footer-input { background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease; }
+        .footer-input:focus { background-color: rgba(255, 255, 255, 0.15); border-color: var(--primary-color); outline: none; }
+        .footer-button { background-color: var(--primary-color); transition: all 0.3s ease; }
+        .footer-button:hover { background-color: var(--primary-color-darker); }
+        .product-grid-card { display: flex; flex-direction: column; background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); overflow: hidden; transition: all 0.3s ease; position: relative; }
+        .product-grid-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        .stock-out-badge { position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(255, 255, 255, 0.9); padding: 4px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; color: #dc2626; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10; }
+        .form-input { width: 100%; border-radius: 0.5rem; border: 1px solid #d1d5db; padding: 0.75rem; transition: all 0.2s ease-in-out; }
+        .form-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 2px var(--primary-color-light); outline: none; }
+        .form-label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151; }
+        .tab-active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+    </style>
+</head>
+<body class="bg-gray-50 flex flex-col min-h-screen" 
+    x-data="{ 
+        mobileMenuOpen: false, 
+        mobileSearchOpen: false, 
+        view: 'home',
+        
+        // Cart State & Logic
+        cart: [], // Format: [{ id, name, price, icon, color, quantity }]
+        get cartTotalItems() {
+            return this.cart.reduce((sum, item) => sum + item.quantity, 0);
+        },
+        get cartSubtotal() {
+            return this.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        },
+        addToCart(product) {
+            let existingItem = this.cart.find(item => item.id === product.id);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                this.cart.push({ ...product, quantity: 1 });
+            }
+            alert(product.name + ' has been added to your cart!');
+        },
+        updateQuantity(productId, amount) {
+            let item = this.cart.find(item => item.id === productId);
+            if (item) {
+                item.quantity += amount;
+                if (item.quantity <= 0) {
+                    this.removeFromCart(productId);
+                }
+            }
+        },
+        removeFromCart(productId) {
+            this.cart = this.cart.filter(item => item.id !== productId);
+        },
+
+        // Checkout State (now depends on cart)
+        couponCode: '',
+        couponError: '',
+        discountPercent: 0,
+        shipping: 0.00,
+        
+        applyCoupon() {
+            if (this.couponCode.toUpperCase() === 'SALE20') {
+                this.discountPercent = 20;
+                this.couponError = '';
+            } else {
+                this.discountPercent = 0;
+                this.couponError = 'Invalid coupon code.';
+            }
+        },
+        removeCoupon() {
+            this.couponCode = '';
+            this.discountPercent = 0;
+            this.couponError = '';
+        },
+        get discountAmount() {
+            return this.cartSubtotal * (this.discountPercent / 100);
+        },
+        get total() {
+            return this.cartSubtotal - this.discountAmount + this.shipping;
+        }
+    }">
+
+    <!-- Header -->
+    <header class="header flex justify-between items-center p-4 bg-white shadow-md sticky top-0 z-50 h-[4.5rem]">
+        <a href="#" @click.prevent="view = 'home'" class="logo"><img src="https://i.postimg.cc/632VFynb/IMG-20250811-105655.png" alt="Roko Flux Logo" class="h-10"></a>
+        <div class="search-bar flex-1 max-w-2xl mx-5 hidden sm:block"><input type="text" placeholder="Search products..." class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"></div>
+        <div class="flex items-center gap-5">
+            <!-- Mobile Icons -->
+            <div class="flex gap-5 md:hidden">
+                <button @click="mobileSearchOpen = !mobileSearchOpen" class="icon text-2xl text-gray-600 hover:text-[var(--primary-color)] cursor-pointer" aria-label="Search"><i class="ri-search-line"></i></button>
+                <a href="#" @click.prevent="view = 'cart'" class="icon text-2xl text-gray-600 hover:text-[var(--primary-color)] cursor-pointer relative">
+                    <i class="ri-shopping-cart-line"></i>
+                    <span x-show="cartTotalItems > 0" x-text="cartTotalItems" class="absolute -top-2 -right-2.5 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold" style="display: none;"></span>
+                </a>
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="icon text-2xl text-gray-600 hover:text-[var(--primary-color)] cursor-pointer" aria-label="Open menu"><i class="ri-menu-line"></i></button>
+            </div>
+            <!-- Desktop Icons -->
+            <div class="hidden md:flex items-center gap-5">
+                <a href="#" class="icon text-2xl text-gray-600 hover:text-[var(--primary-color)] cursor-pointer" aria-label="My Orders"><i class="ri-box-1-line"></i></a>
+                <a href="#" @click.prevent="view = 'cart'" class="icon text-2xl text-gray-600 hover:text-[var(--primary-color)] cursor-pointer relative">
+                    <i class="ri-shopping-cart-line"></i>
+                    <span x-show="cartTotalItems > 0" x-text="cartTotalItems" class="absolute -top-2 -right-2.5 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold" style="display: none;"></span>
+                </a>
+                <a href="#" class="icon text-2xl text-gray-600 hover:text-[var(--primary-color)] cursor-pointer" aria-label="Wishlist"><i class="ri-file-list-line"></i></a>
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="icon text-2xl text-gray-600 hover:text-[var(--primary-color)] cursor-pointer" aria-label="Open menu"><i class="ri-menu-line"></i></button>
+            </div>
+        </div>
+    </header>
+    
+    <main class="flex-grow">
+        <!-- Mobile Search Bar -->
+        <div x-show="mobileSearchOpen" x-transition class="bg-transparent p-4 md:hidden sticky top-[4.5rem] z-40" style="display: none;"><input type="text" placeholder="Search products..." class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] bg-white/90"></div>
+
+        <!-- ======================================================= -->
+        <!-- ==============   START: HOME PAGE VIEW   ============== -->
+        <!-- ======================================================= -->
+        <div x-show="view === 'home'">
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <div class="hero-slide">Summer Collection 2023</div>
+            </section>
+
+            <!-- Product Category Section -->
+            <section class="mb-12">
+                <div class="text-center mt-6 mb-6 md:mt-8 md:mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800">Product Categories</h2>
+                </div>
+                <div class="horizontal-scroll smooth-scroll md:px-8">
+                    <div class="category-scroll-container">
+                         <a href="#" class="category-icon"><i class="fas fa-graduation-cap"></i><span>Course</span></a>
+                         <a href="#" class="category-icon"><i class="fas fa-crown"></i><span>Subscription</span></a>
+                         <a href="#" class="category-icon"><i class="fas fa-th-large"></i><span>Software</span></a>
+                         <a href="#" class="category-icon"><i class="fas fa-book-open"></i><span>eBook</span></a>
+                         <a href="#" class="category-icon"><i class="fas fa-archive"></i><span>Resources</span></a>
+                         <a href="#" class="category-icon"><i class="fas fa-layer-group"></i><span>Templates</span></a>
+                         <a href="#" class="category-icon"><i class="fas fa-plug"></i><span>Plugins</span></a>
+                    </div>
+                </div>
+            </section>
+                
+            <!-- Courses Section -->
+            <section class="mb-12">
+                <div class="flex justify-between items-center mb-4 px-4 md:px-6">
+                    <h2 class="text-2xl font-bold">Courses</h2>
+                    <a href="#" @click.prevent="view = 'products'" class="text-[var(--primary-color)] font-bold hover:underline flex items-center text-lg">
+                        View all <i class="ri-arrow-right-double-line ml-1 text-2xl"></i>
+                    </a>
+                </div>
+                <div class="horizontal-scroll smooth-scroll">
+                    <div class="product-scroll-container">
+                        <div class="product-card bg-white">
+                            <div class="h-2/4 flex items-center justify-center text-white font-bold relative bg-gradient-to-r from-blue-400 to-blue-600"><i class="ri-html5-fill text-5xl"></i></div>
+                            <div class="p-4 flex-grow flex flex-col"><h3 class="font-bold mb-1">Web Dev Basics</h3><p class="text-gray-600 text-sm mb-3">HTML, CSS, & JS</p><div class="text-[var(--primary-color)] font-bold text-lg mb-3 mt-auto">$29.99</div><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition md:py-2 py-1.5 md:text-base text-sm">View Details</button></div>
+                        </div>
+                        <div class="product-card bg-white">
+                            <div class="h-2/4 flex items-center justify-center text-white font-bold relative bg-gradient-to-r from-green-400 to-green-600"><i class="ri-javascript-fill text-5xl"></i></div>
+                            <div class="p-4 flex-grow flex flex-col"><h3 class="font-bold mb-1">Advanced JS</h3><p class="text-gray-600 text-sm mb-3">Modern JS concepts</p><div class="text-[var(--primary-color)] font-bold text-lg mb-3 mt-auto">$89.99</div><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition md:py-2 py-1.5 md:text-base text-sm">View Details</button></div>
+                        </div>
+                        <div class="product-card bg-white">
+                            <div class="h-2/4 flex items-center justify-center text-white font-bold relative bg-gradient-to-r from-purple-400 to-purple-600"><div class="category-badge text-red-700 font-bold">Stock Out</div><i class="ri-reactjs-line text-5xl"></i></div>
+                            <div class="p-4 flex-grow flex flex-col"><h3 class="font-bold mb-1">React Framework</h3><p class="text-gray-600 text-sm mb-3">Build UIs with React</p><div class="text-[var(--primary-color)] font-bold text-lg mb-3 mt-auto">$199.99</div><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition md:py-2 py-1.5 md:text-base text-sm">View Details</button></div>
+                        </div>
+                        <div class="product-card bg-white">
+                            <div class="h-2/4 flex items-center justify-center text-white font-bold relative bg-gradient-to-r from-yellow-400 to-yellow-600"><i class="ri-server-line text-5xl"></i></div>
+                            <div class="p-4 flex-grow flex flex-col"><h3 class="font-bold mb-1">Node.js Backend</h3><p class="text-gray-600 text-sm mb-3">Node.js for backend</p><div class="text-[var(--primary-color)] font-bold text-lg mb-3 mt-auto">$59.99</div><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition md:py-2 py-1.5 md:text-base text-sm">View Details</button></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Why Choose Us Section -->
+            <section class="why-choose-us py-12 bg-white">
+                <div class="container mx-auto px-4">
+                    <h2 class="text-3xl font-bold text-center mb-12">Why Choose Us</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="feature-card bg-gray-50 p-4 rounded-xl text-center flex flex-col w-full"><div class="icon bg-[var(--primary-color-light)] w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ri-money-dollar-circle-line text-2xl text-[var(--primary-color)]"></i></div><h3 class="text-lg font-bold mb-1">Affordable Price</h3><p class="text-sm text-gray-600 mt-2 text-left">Get top-tier content without breaking the bank. Quality education for everyone.</p></div>
+                        <div class="feature-card bg-gray-50 p-4 rounded-xl text-center flex flex-col w-full"><div class="icon bg-[var(--primary-color-light)] w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ri-award-line text-2xl text-[var(--primary-color)]"></i></div><h3 class="text-lg font-bold mb-1">Premium Quality</h3><p class="text-sm text-gray-600 mt-2 text-left">Expert-curated content to ensure the best learning experience and outcomes.</p></div>
+                        <div class="feature-card bg-gray-50 p-4 rounded-xl text-center flex flex-col w-full"><div class="icon bg-[var(--primary-color-light)] w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ri-verified-badge-line text-2xl text-[var(--primary-color)]"></i></div><h3 class="text-lg font-bold mb-1">Trusted</h3><p class="text-sm text-gray-600 mt-2 text-left">Join thousands of satisfied learners on our platform, building skills and careers.</p></div>
+                        <div class="feature-card bg-gray-50 p-4 rounded-xl text-center flex flex-col w-full"><div class="icon bg-[var(--primary-color-light)] w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ri-lock-line text-2xl text-[var(--primary-color)]"></i></div><h3 class="text-lg font-bold mb-1">Secure Payment</h3><p class="text-sm text-gray-600 mt-2 text-left">Your transactions are protected with encrypted payment gateways for peace of mind.</p></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- ===========  START: ALL PRODUCTS PAGE VIEW  =========== -->
+        <!-- ======================================================= -->
+        <div x-show="view === 'products'" style="display: none;">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="mb-6"><a href="#" @click.prevent="view = 'home'" class="text-lg font-semibold text-[var(--primary-color)] hover:underline flex items-center"><i class="ri-arrow-left-s-line mr-1 text-2xl"></i> Back to Home</a></div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-8">All Courses</h1>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
+                    <!-- Product Card 1 -->
+                    <div class="product-grid-card"><div class="h-28 md:h-40 flex items-center justify-center bg-gradient-to-r from-blue-400 to-blue-600"><i class="ri-html5-fill text-4xl md:text-5xl text-white"></i></div><div class="p-3 sm:p-4 flex flex-col flex-grow"><h3 class="text-base md:text-lg font-bold text-gray-800 mb-1">Web Dev Basics</h3><p class="text-xs sm:text-sm text-gray-600 mb-2 md:mb-4 flex-grow">A comprehensive intro to HTML, CSS, & JavaScript.</p><p class="text-lg md:text-xl font-extrabold text-[var(--primary-color)] mb-3 md:mb-4">$29.99</p><div class="flex flex-col sm:flex-row gap-2"><button @click.prevent="view = 'checkout'" class="w-full bg-[var(--primary-color)] text-white py-2 rounded-md hover:bg-[var(--primary-color-darker)] transition text-sm font-semibold">Buy Now</button><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition text-sm font-semibold">View Details</button></div></div></div>
+                    <!-- Product Card 2 -->
+                    <div class="product-grid-card"><div class="h-28 md:h-40 flex items-center justify-center bg-gradient-to-r from-green-400 to-green-600"><i class="ri-javascript-fill text-4xl md:text-5xl text-white"></i></div><div class="p-3 sm:p-4 flex flex-col flex-grow"><h3 class="text-base md:text-lg font-bold text-gray-800 mb-1">Advanced JS</h3><p class="text-xs sm:text-sm text-gray-600 mb-2 md:mb-4 flex-grow">Master modern JavaScript concepts like async/await.</p><p class="text-lg md:text-xl font-extrabold text-[var(--primary-color)] mb-3 md:mb-4">$89.99</p><div class="flex flex-col sm:flex-row gap-2"><button @click.prevent="view = 'checkout'" class="w-full bg-[var(--primary-color)] text-white py-2 rounded-md hover:bg-[var(--primary-color-darker)] transition text-sm font-semibold">Buy Now</button><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition text-sm font-semibold">View Details</button></div></div></div>
+                    <!-- Product Card 3 (Stock Out) -->
+                    <div class="product-grid-card"><div class="h-28 md:h-40 flex items-center justify-center bg-gradient-to-r from-purple-400 to-purple-600 relative"><div class="stock-out-badge">Stock Out</div><i class="ri-reactjs-line text-4xl md:text-5xl text-white"></i></div><div class="p-3 sm:p-4 flex flex-col flex-grow"><h3 class="text-base md:text-lg font-bold text-gray-800 mb-1">React Framework</h3><p class="text-xs sm:text-sm text-gray-600 mb-2 md:mb-4 flex-grow">Build modern, dynamic user interfaces with React.</p><p class="text-lg md:text-xl font-extrabold text-[var(--primary-color)] mb-3 md:mb-4">$199.99</p><div class="flex flex-col sm:flex-row gap-2"><button class="w-full bg-[var(--primary-color)] text-white py-2 rounded-md transition text-sm font-semibold disabled:opacity-50 cursor-not-allowed" disabled>Buy Now</button><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition text-sm font-semibold">View Details</button></div></div></div>
+                    <!-- Product Card 4 -->
+                    <div class="product-grid-card"><div class="h-28 md:h-40 flex items-center justify-center bg-gradient-to-r from-yellow-400 to-yellow-600"><i class="ri-server-line text-4xl md:text-5xl text-white"></i></div><div class="p-3 sm:p-4 flex flex-col flex-grow"><h3 class="text-base md:text-lg font-bold text-gray-800 mb-1">Node.js Backend</h3><p class="text-xs sm:text-sm text-gray-600 mb-2 md:mb-4 flex-grow">Build scalable server-side applications with Node.js.</p><p class="text-lg md:text-xl font-extrabold text-[var(--primary-color)] mb-3 md:mb-4">$59.99</p><div class="flex flex-col sm:flex-row gap-2"><button @click.prevent="view = 'checkout'" class="w-full bg-[var(--primary-color)] text-white py-2 rounded-md hover:bg-[var(--primary-color-darker)] transition text-sm font-semibold">Buy Now</button><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition text-sm font-semibold">View Details</button></div></div></div>
+                    <!-- Product Card 5 (Stock Out) -->
+                    <div class="product-grid-card"><div class="h-28 md:h-40 flex items-center justify-center bg-gradient-to-r from-red-400 to-red-600 relative"><div class="stock-out-badge">Stock Out</div><i class="ri-pencil-ruler-2-line text-4xl md:text-5xl text-white"></i></div><div class="p-3 sm:p-4 flex flex-col flex-grow"><h3 class="text-base md:text-lg font-bold text-gray-800 mb-1">UI/UX Design</h3><p class="text-xs sm:text-sm text-gray-600 mb-2 md:mb-4 flex-grow">Master design principles with Figma & Adobe XD.</p><p class="text-lg md:text-xl font-extrabold text-[var(--primary-color)] mb-3 md:mb-4">$79.99</p><div class="flex flex-col sm:flex-row gap-2"><button class="w-full bg-[var(--primary-color)] text-white py-2 rounded-md transition text-sm font-semibold disabled:opacity-50 cursor-not-allowed" disabled>Buy Now</button><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition text-sm font-semibold">View Details</button></div></div></div>
+                    <!-- Product Card 6 -->
+                    <div class="product-grid-card"><div class="h-28 md:h-40 flex items-center justify-center bg-gradient-to-r from-indigo-400 to-indigo-600"><i class="ri-database-2-line text-4xl md:text-5xl text-white"></i></div><div class="p-3 sm:p-4 flex flex-col flex-grow"><h3 class="text-base md:text-lg font-bold text-gray-800 mb-1">Databases</h3><p class="text-xs sm:text-sm text-gray-600 mb-2 md:mb-4 flex-grow">Dive into database management with SQL and NoSQL.</p><p class="text-lg md:text-xl font-extrabold text-[var(--primary-color)] mb-3 md:mb-4">$49.99</p><div class="flex flex-col sm:flex-row gap-2"><button @click.prevent="view = 'checkout'" class="w-full bg-[var(--primary-color)] text-white py-2 rounded-md hover:bg-[var(--primary-color-darker)] transition text-sm font-semibold">Buy Now</button><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition text-sm font-semibold">View Details</button></div></div></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ======================================================= -->
+        <!-- ================ START: CART PAGE VIEW ================ -->
+        <!-- ======================================================= -->
+        <div x-show="view === 'cart'" style="display: none;">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight mb-8">Your Shopping Cart</h1>
+
+                <!-- If Cart is Empty -->
+                <template x-if="cart.length === 0">
+                    <div class="text-center bg-white p-12 rounded-lg shadow-md">
+                        <i class="ri-shopping-cart-2-line text-6xl text-gray-300 mb-4"></i>
+                        <h2 class="text-2xl font-bold text-gray-800">Your cart is empty.</h2>
+                        <p class="text-gray-500 mt-2 mb-6">Looks like you haven't added anything to your cart yet.</p>
+                        <button @click="view = 'products'" class="bg-[var(--primary-color)] text-white font-bold py-3 px-6 rounded-lg hover:bg-[var(--primary-color-darker)] transition">
+                            Continue Shopping
+                        </button>
+                    </div>
+                </template>
+
+                <!-- If Cart has items -->
+                <template x-if="cart.length > 0">
+                    <div class="lg:grid lg:grid-cols-3 lg:gap-8">
+                        <!-- Left Side: Cart Items -->
+                        <div class="lg:col-span-2">
+                            <div class="bg-white rounded-lg shadow-md divide-y divide-gray-200">
+                                <template x-for="item in cart" :key="item.id">
+                                    <div class="flex items-center p-4">
+                                        <div :class="item.color" class="w-20 h-20 bg-gradient-to-r rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                                            <i :class="item.icon" class="text-3xl text-white"></i>
+                                        </div>
+                                        <div class="flex-grow">
+                                            <h3 class="font-bold text-gray-800" x-text="item.name"></h3>
+                                            <p class="text-sm text-gray-500" x-text="'$' + item.price.toFixed(2)"></p>
+                                        </div>
+                                        <div class="flex items-center gap-2 mx-4">
+                                            <button @click="updateQuantity(item.id, -1)" class="w-7 h-7 bg-gray-200 rounded-full font-bold text-gray-600 hover:bg-gray-300">-</button>
+                                            <span class="font-semibold w-6 text-center" x-text="item.quantity"></span>
+                                            <button @click="updateQuantity(item.id, 1)" class="w-7 h-7 bg-gray-200 rounded-full font-bold text-gray-600 hover:bg-gray-300">+</button>
+                                        </div>
+                                        <p class="font-bold text-lg text-gray-800 w-24 text-right" x-text="'$' + (item.price * item.quantity).toFixed(2)"></p>
+                                        <button @click="removeFromCart(item.id)" class="ml-4 text-gray-400 hover:text-red-500">
+                                            <i class="ri-delete-bin-line text-xl"></i>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Right Side: Order Summary -->
+                        <div class="mt-8 lg:mt-0">
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h2 class="text-xl font-bold text-gray-800 mb-4">Summary</h2>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between text-gray-600">
+                                        <span>Subtotal</span>
+                                        <span x-text="'$' + cartSubtotal.toFixed(2)"></span>
+                                    </div>
+                                    <div class="flex justify-between text-gray-600">
+                                        <span>Shipping</span>
+                                        <span>$0.00</span>
+                                    </div>
+                                    <div class="border-t pt-4 mt-2 flex justify-between font-bold text-xl text-gray-900">
+                                        <span>Total</span>
+                                        <span x-text="'$' + cartSubtotal.toFixed(2)"></span>
+                                    </div>
+                                </div>
+                                <button @click="view = 'checkout'" class="w-full mt-6 bg-[var(--primary-color)] text-white text-lg font-bold py-3 rounded-lg hover:bg-[var(--primary-color-darker)] transition">
+                                    Proceed to Checkout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- ============== START: CHECKOUT PAGE VIEW ============== -->
+        <!-- ======================================================= -->
+        <div x-show="view === 'checkout'" style="display: none;">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight mb-8">Secure Checkout</h1>
+                <!-- If checkout is attempted with empty cart -->
+                <template x-if="cart.length === 0">
+                    <div class="text-center bg-white p-12 rounded-lg shadow-md">
+                        <i class="ri-error-warning-line text-6xl text-yellow-400 mb-4"></i>
+                        <h2 class="text-2xl font-bold text-gray-800">Your cart is empty.</h2>
+                        <p class="text-gray-500 mt-2 mb-6">Please add items to your cart before proceeding to checkout.</p>
+                        <button @click="view = 'products'" class="bg-[var(--primary-color)] text-white font-bold py-3 px-6 rounded-lg hover:bg-[var(--primary-color-darker)] transition">Shop Courses</button>
+                    </div>
+                </template>
+                <!-- If cart has items -->
+                <template x-if="cart.length > 0">
+                    <div class="lg:grid lg:grid-cols-3 lg:gap-12">
+                        <!-- Left Side: Billing and Payment -->
+                        <div class="lg:col-span-2 space-y-8">
+                            <div class="bg-white p-6 rounded-xl shadow-md"><h2 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">Billing Information</h2><div class="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-6"><div><label for="first-name" class="form-label">First name</label><input type="text" id="first-name" class="form-input"></div><div><label for="last-name" class="form-label">Last name</label><input type="text" id="last-name" class="form-input"></div><div class="sm:col-span-2"><label for="email" class="form-label">Email address</label><input type="email" id="email" class="form-input"></div><div class="sm:col-span-2"><label for="address" class="form-label">Address</label><input type="text" id="address" class="form-input"></div></div></div>
+                            <div class="bg-white p-6 rounded-xl shadow-md"><h2 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">Payment Details</h2><div class="grid grid-cols-1 gap-y-6"><div><label for="card-number" class="form-label">Card number</label><input type="text" id="card-number" placeholder="•••• •••• •••• ••••" class="form-input"></div><div><label for="card-name" class="form-label">Name on card</label><input type="text" id="card-name" class="form-input"></div><div class="grid grid-cols-2 gap-x-6"><div><label for="expiry-date" class="form-label">Expiration date (MM/YY)</label><input type="text" id="expiry-date" placeholder="MM / YY" class="form-input"></div><div><label for="cvc" class="form-label">CVC</label><input type="text" id="cvc" placeholder="•••" class="form-input"></div></div></div></div>
+                        </div>
+
+                        <!-- Right Side: Order Summary -->
+                        <div class="mt-10 lg:mt-0 lg:col-span-1">
+                            <div class="bg-gray-100 p-6 rounded-xl shadow-md sticky top-28">
+                                <h2 class="text-xl font-bold text-gray-800 mb-6 border-b pb-4">Order Summary</h2>
+                                <!-- Dynamic Product List from Cart -->
+                                <div class="space-y-4 mb-6">
+                                    <template x-for="item in cart" :key="item.id">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <div :class="item.color" class="w-16 h-16 bg-gradient-to-r rounded-lg flex items-center justify-center mr-4">
+                                                    <i :class="item.icon" class="text-3xl text-white"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="font-semibold text-gray-800" x-text="item.name"></p>
+                                                    <p class="text-sm text-gray-500" x-text="'Qty: ' + item.quantity"></p>
+                                                </div>
+                                            </div>
+                                            <p class="font-semibold text-gray-800" x-text="'$' + (item.price * item.quantity).toFixed(2)"></p>
+                                        </div>
+                                    </template>
+                                </div>
+                                <!-- Coupon and Price Calculation -->
+                                <div class="mb-6"><label for="coupon-code" class="form-label">Coupon Code</label><div class="flex gap-2"><input type="text" id="coupon-code" x-model="couponCode" placeholder="Enter code" class="form-input flex-grow uppercase" :disabled="discountPercent > 0"><button @click="applyCoupon()" class="bg-gray-300 text-gray-700 font-semibold px-4 rounded-lg hover:bg-gray-400 transition" :disabled="discountPercent > 0">Apply</button></div><template x-if="couponError"><p class="text-red-600 text-sm mt-2" x-text="couponError"></p></template><template x-if="discountPercent > 0"><div class="text-green-600 text-sm mt-2 flex justify-between items-center"><span>✓ Code <strong x-text="couponCode.toUpperCase()"></strong> applied!</span><button @click="removeCoupon()" class="text-xs text-red-500 hover:underline">Remove</button></div></template></div>
+                                <div class="space-y-2 border-t pt-6"><div class="flex justify-between text-gray-600"><p>Subtotal</p><p x-text="'$' + cartSubtotal.toFixed(2)"></p></div><template x-if="discountPercent > 0"><div class="flex justify-between text-green-600"><p>Discount (<span x-text="discountPercent"></span>%)</p><p x-text="'-$' + discountAmount.toFixed(2)"></p></div></template><div class="flex justify-between text-gray-600"><p>Shipping</p><p x-text="'$' + shipping.toFixed(2)"></p></div><div class="flex justify-between text-xl font-bold text-gray-900 border-t pt-4 mt-2"><p>Total</p><p x-text="'$' + total.toFixed(2)"></p></div></div>
+                                <button class="w-full mt-8 bg-[var(--primary-color)] text-white text-lg font-bold py-3 rounded-xl hover:bg-[var(--primary-color-darker)] transition-all transform hover:scale-105">Pay Now</button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+        
+        <!-- ======================================================= -->
+        <!-- =========== START: PRODUCT DETAIL PAGE VIEW =========== -->
+        <!-- ======================================================= -->
+        <div x-show="view === 'productDetail'" style="display: none;" 
+            x-data="{
+                product: { id: 2, name: 'Advanced JS', price: 89.99, icon: 'ri-javascript-fill', color: 'bg-gradient-to-br from-green-400 to-green-600' },
+                durations: [
+                    { years: 1, price: 89.99, discount: 'Standard' },
+                    { years: 2, price: 159.99, discount: 'Save 10%' },
+                    { years: 3, price: 219.99, discount: 'Save 20%' }
+                ],
+                selectedDuration: 1,
+                activeTab: 'description',
+                descriptionExpanded: false,
+                reviewModalOpen: false,
+                getPrice() {
+                    let selectedPrice = this.durations.find(d => d.years === this.selectedDuration).price;
+                    this.product.price = selectedPrice; // Update product price for cart
+                    return selectedPrice.toFixed(2);
+                }
+            }">
+            
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <!-- Breadcrumb Navigation -->
+                <div class="mb-6">
+                    <a href="#" @click.prevent="view = 'products'" class="text-lg font-semibold text-[var(--primary-color)] hover:underline flex items-center">
+                        <i class="ri-arrow-left-s-line mr-1 text-2xl"></i>
+                        Back to All Courses
+                    </a>
+                </div>
+
+                <!-- Product Details Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                    <!-- Left: Product Image -->
+                    <div class="bg-gradient-to-br from-green-400 to-green-600 rounded-2xl shadow-lg flex items-center justify-center aspect-square md:aspect-auto">
+                        <i class="ri-javascript-fill text-9xl text-white"></i>
+                    </div>
+
+                    <!-- Right: Product Info -->
+                    <div class="flex flex-col">
+                        <h1 class="text-4xl font-extrabold text-gray-900 mb-3">Advanced JS</h1>
+                        <p class="text-gray-600 mb-6">Master modern JavaScript concepts like closures, promises, async/await, and advanced design patterns to build scalable applications.</p>
+                        
+                        <!-- Price -->
+                        <div class="mb-6">
+                            <p class="text-5xl font-bold text-[var(--primary-color)]" x-text="'$' + getPrice()"></p>
+                        </div>
+
+                        <!-- Duration Selector -->
+                        <div class="mb-8">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-3">Choose Subscription Duration:</h3>
+                            <div class="flex flex-wrap gap-3">
+                                <template x-for="duration in durations" :key="duration.years">
+                                    <button @click="selectedDuration = duration.years"
+                                        :class="{
+                                            'bg-[var(--primary-color)] text-white border-[var(--primary-color)]': selectedDuration === duration.years,
+                                            'bg-white text-gray-700 border-gray-300 hover:bg-gray-100': selectedDuration !== duration.years
+                                        }"
+                                        class="px-4 py-2 rounded-lg border-2 font-semibold transition text-center">
+                                        <span x-text="duration.years + ' Year'"></span>
+                                        <span class="block text-xs font-normal opacity-80" x-text="duration.discount"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col sm:flex-row gap-4 mt-auto">
+                            <button @click="addToCart(product); view = 'checkout'" class="w-full bg-[var(--primary-color)] text-white py-3 rounded-xl text-lg font-bold hover:bg-[var(--primary-color-darker)] transition transform hover:scale-105">Buy Now</button>
+                            <button @click="addToCart(product)" class="w-full bg-gray-200 text-gray-800 py-3 rounded-xl text-lg font-bold hover:bg-gray-300 transition">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description & Reviews Tabs -->
+                <div class="mt-16">
+                    <!-- Tab Buttons -->
+                    <div class="border-b border-gray-200 mb-6">
+                        <nav class="flex space-x-8 -mb-px">
+                            <button @click="activeTab = 'description'" :class="{ 'tab-active': activeTab === 'description' }" class="py-4 px-1 border-b-2 border-transparent font-medium text-lg text-gray-500 hover:text-gray-700 hover:border-gray-300">Description</button>
+                            <button @click="activeTab = 'reviews'" :class="{ 'tab-active': activeTab === 'reviews' }" class="py-4 px-1 border-b-2 border-transparent font-medium text-lg text-gray-500 hover:text-gray-700 hover:border-gray-300">Reviews</button>
+                        </nav>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div>
+                        <!-- Description Content -->
+                        <div x-show="activeTab === 'description'" class="prose max-w-none text-gray-600">
+                            <div class="relative transition-all duration-500" :class="{'max-h-32 overflow-hidden': !descriptionExpanded, 'max-h-full': descriptionExpanded}">
+                                <p>This course provides a deep dive into the core concepts of modern JavaScript that every professional developer should know. You will move beyond the basics and explore the nuances of the language that enable you to write cleaner, more efficient, and more maintainable code. We'll start with a thorough review of fundamental concepts like scope and closures, ensuring you have a solid foundation.</p>
+                                <p>From there, we will explore asynchronous JavaScript in depth, covering everything from callbacks to Promises and the modern async/await syntax. You'll learn how to handle asynchronous operations gracefully, avoiding common pitfalls like callback hell. The course also covers advanced topics such as JavaScript modules, iterators, generators, and metaprogramming with proxies and reflects. Each topic is explained with practical examples and real-world scenarios to help you understand not just the 'how' but also the 'why'.</p>
+                                <p>By the end of this course, you'll have a comprehensive understanding of advanced JavaScript, enabling you to tackle complex development challenges, excel in technical interviews, and contribute to high-level projects with confidence.</p>
+                                <div x-show="!descriptionExpanded" class="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-gray-50 to-transparent"></div>
+                            </div>
+                            <button @click="descriptionExpanded = !descriptionExpanded" class="mt-4 font-bold text-[var(--primary-color)] hover:underline" x-text="descriptionExpanded ? 'Show Less' : 'Read More...'"></button>
+                        </div>
+
+                        <!-- Reviews Content -->
+                        <div x-show="activeTab === 'reviews'">
+                            <button @click="reviewModalOpen = true" class="w-full text-left p-4 bg-white rounded-lg shadow-sm border border-gray-200 text-gray-500 hover:bg-gray-50 transition">
+                                Click here to write your review...
+                            </button>
+                            <!-- Placeholder for existing reviews -->
+                            <div class="mt-6 space-y-4">
+                                <p class="text-gray-500">No reviews yet. Be the first to write one!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Modal/Popup -->
+            <div x-show="reviewModalOpen" @keydown.escape.window="reviewModalOpen = false" x-transition.opacity style="display: none;" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                <div @click.outside="reviewModalOpen = false" x-show="reviewModalOpen" x-transition.scale class="bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-lg">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Write a Review</h2>
+                        <button @click="reviewModalOpen = false" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                    </div>
+                    <form>
+                        <div class="space-y-4">
+                            <div><label for="review-name" class="form-label">Your Name</label><input type="text" id="review-name" class="form-input" placeholder="e.g., John Doe"></div>
+                            <div><label for="review-rating" class="form-label">Rating</label><select id="review-rating" class="form-input"><option>5 Stars - Excellent</option><option>4 Stars - Good</option><option>3 Stars - Average</option><option>2 Stars - Fair</option><option>1 Star - Poor</option></select></div>
+                            <div><label for="review-comment" class="form-label">Your Review</label><textarea id="review-comment" rows="4" class="form-input" placeholder="Share your thoughts about the course..."></textarea></div>
+                        </div>
+                        <div class="mt-8 flex justify-end">
+                            <button type="submit" @click.prevent="reviewModalOpen = false" class="bg-[var(--primary-color)] text-white font-bold py-2 px-6 rounded-lg hover:bg-[var(--primary-color-darker)] transition">Submit Review</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-section bg-gray-900 text-white pt-12 pb-8">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Roko Flux</h3>
+                    <p class="text-gray-400">Your one-stop shop for high-quality digital products and courses.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" @click.prevent="view='home'" class="footer-link">Home</a></li>
+                        <li><a href="#" @click.prevent="view='products'" class="footer-link">All Courses</a></li>
+                        <li><a href="#" class="footer-link">About Us</a></li>
+                        <li><a href="#" class="footer-link">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Follow Us</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white text-2xl"><i class="ri-facebook-fill"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white text-2xl"><i class="ri-twitter-fill"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white text-2xl"><i class="ri-instagram-fill"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Newsletter</h3>
+                    <p class="text-gray-400 mb-3">Subscribe for updates and promotions.</p>
+                    <div class="flex"><input type="email" placeholder="Your email" class="w-full px-4 py-2 rounded-l-md text-gray-900 footer-input"><button class="footer-button px-4 py-2 rounded-r-md">Go</button></div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-500">
+                <p>&copy; 2023 Roko Flux. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
