@@ -1,3 +1,23 @@
+<?php
+// Load product and category data
+$data_file_path = __DIR__ . '/data.json';
+$data = ['categories' => [], 'products' => []];
+if (file_exists($data_file_path)) {
+    $data = json_decode(file_get_contents($data_file_path), true);
+}
+
+// Create a map of categories for easy lookup
+$categories_map = [];
+foreach ($data['categories'] as $category) {
+    $categories_map[$category['id']] = $category;
+}
+
+// Group products by category
+$products_by_category = [];
+foreach ($data['products'] as $product) {
+    $products_by_category[$product['categoryId']][] = $product;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,6 +87,10 @@
         mobileSearchOpen: false, 
         view: 'home',
         
+        // Load data from PHP
+        products: <?php echo json_encode($data['products']); ?>,
+        categories: <?php echo json_encode($data['categories']); ?>,
+
         // Cart State & Logic
         cart: [], // Format: [{ id, name, price, icon, color, quantity }]
         get cartTotalItems() {
@@ -172,46 +196,49 @@
                 </div>
                 <div class="horizontal-scroll smooth-scroll md:px-8">
                     <div class="category-scroll-container">
-                         <a href="#" class="category-icon"><i class="fas fa-graduation-cap"></i><span>Course</span></a>
-                         <a href="#" class="category-icon"><i class="fas fa-crown"></i><span>Subscription</span></a>
-                         <a href="#" class="category-icon"><i class="fas fa-th-large"></i><span>Software</span></a>
-                         <a href="#" class="category-icon"><i class="fas fa-book-open"></i><span>eBook</span></a>
-                         <a href="#" class="category-icon"><i class="fas fa-archive"></i><span>Resources</span></a>
-                         <a href="#" class="category-icon"><i class="fas fa-layer-group"></i><span>Templates</span></a>
-                         <a href="#" class="category-icon"><i class="fas fa-plug"></i><span>Plugins</span></a>
+                         <?php foreach ($data['categories'] as $category): ?>
+                            <a href="#" class="category-icon">
+                                <i class="<?php echo htmlspecialchars($category['icon']); ?>"></i>
+                                <span><?php echo htmlspecialchars($category['name']); ?></span>
+                            </a>
+                         <?php endforeach; ?>
                     </div>
                 </div>
             </section>
-                
-            <!-- Courses Section -->
-            <section class="mb-12">
-                <div class="flex justify-between items-center mb-4 px-4 md:px-6">
-                    <h2 class="text-2xl font-bold">Courses</h2>
-                    <a href="#" @click.prevent="view = 'products'" class="text-[var(--primary-color)] font-bold hover:underline flex items-center text-lg">
-                        View all <i class="ri-arrow-right-double-line ml-1 text-2xl"></i>
-                    </a>
-                </div>
-                <div class="horizontal-scroll smooth-scroll">
-                    <div class="product-scroll-container">
-                        <div class="product-card bg-white">
-                            <div class="h-2/4 flex items-center justify-center text-white font-bold relative bg-gradient-to-r from-blue-400 to-blue-600"><i class="ri-html5-fill text-5xl"></i></div>
-                            <div class="p-4 flex-grow flex flex-col"><h3 class="font-bold mb-1">Web Dev Basics</h3><p class="text-gray-600 text-sm mb-3">HTML, CSS, & JS</p><div class="text-[var(--primary-color)] font-bold text-lg mb-3 mt-auto">$29.99</div><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition md:py-2 py-1.5 md:text-base text-sm">View Details</button></div>
-                        </div>
-                        <div class="product-card bg-white">
-                            <div class="h-2/4 flex items-center justify-center text-white font-bold relative bg-gradient-to-r from-green-400 to-green-600"><i class="ri-javascript-fill text-5xl"></i></div>
-                            <div class="p-4 flex-grow flex flex-col"><h3 class="font-bold mb-1">Advanced JS</h3><p class="text-gray-600 text-sm mb-3">Modern JS concepts</p><div class="text-[var(--primary-color)] font-bold text-lg mb-3 mt-auto">$89.99</div><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition md:py-2 py-1.5 md:text-base text-sm">View Details</button></div>
-                        </div>
-                        <div class="product-card bg-white">
-                            <div class="h-2/4 flex items-center justify-center text-white font-bold relative bg-gradient-to-r from-purple-400 to-purple-600"><div class="category-badge text-red-700 font-bold">Stock Out</div><i class="ri-reactjs-line text-5xl"></i></div>
-                            <div class="p-4 flex-grow flex flex-col"><h3 class="font-bold mb-1">React Framework</h3><p class="text-gray-600 text-sm mb-3">Build UIs with React</p><div class="text-[var(--primary-color)] font-bold text-lg mb-3 mt-auto">$199.99</div><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition md:py-2 py-1.5 md:text-base text-sm">View Details</button></div>
-                        </div>
-                        <div class="product-card bg-white">
-                            <div class="h-2/4 flex items-center justify-center text-white font-bold relative bg-gradient-to-r from-yellow-400 to-yellow-600"><i class="ri-server-line text-5xl"></i></div>
-                            <div class="p-4 flex-grow flex flex-col"><h3 class="font-bold mb-1">Node.js Backend</h3><p class="text-gray-600 text-sm mb-3">Node.js for backend</p><div class="text-[var(--primary-color)] font-bold text-lg mb-3 mt-auto">$59.99</div><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition md:py-2 py-1.5 md:text-base text-sm">View Details</button></div>
+
+            <!-- Product Sections (Dynamically Generated) -->
+            <?php foreach ($products_by_category as $categoryId => $products_in_cat): ?>
+                <?php if (!empty($products_in_cat)): ?>
+                <section class="mb-12">
+                    <div class="flex justify-between items-center mb-4 px-4 md:px-6">
+                        <h2 class="text-2xl font-bold"><?php echo htmlspecialchars($categories_map[$categoryId]['name']); ?></h2>
+                        <a href="#" @click.prevent="view = 'products'" class="text-[var(--primary-color)] font-bold hover:underline flex items-center text-lg">
+                            View all <i class="ri-arrow-right-double-line ml-1 text-2xl"></i>
+                        </a>
+                    </div>
+                    <div class="horizontal-scroll smooth-scroll">
+                        <div class="product-scroll-container">
+                            <?php foreach ($products_in_cat as $product): ?>
+                                <div class="product-card bg-white">
+                                    <div class="h-2/4 flex items-center justify-center text-white font-bold relative bg-gradient-to-r <?php echo htmlspecialchars($product['color']); ?>">
+                                        <?php if ($product['stock_out']): ?>
+                                            <div class="category-badge text-red-700 font-bold">Stock Out</div>
+                                        <?php endif; ?>
+                                        <i class="<?php echo htmlspecialchars($product['icon']); ?> text-5xl"></i>
+                                    </div>
+                                    <div class="p-4 flex-grow flex flex-col">
+                                        <h3 class="font-bold mb-1"><?php echo htmlspecialchars($product['name']); ?></h3>
+                                        <p class="text-gray-600 text-sm mb-3"><?php echo htmlspecialchars($product['description']); ?></p>
+                                        <div class="text-[var(--primary-color)] font-bold text-lg mb-3 mt-auto">$<?php echo htmlspecialchars($product['price']); ?></div>
+                                        <button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition md:py-2 py-1.5 md:text-base text-sm">View Details</button>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+                <?php endif; ?>
+            <?php endforeach; ?>
 
             <!-- Why Choose Us Section -->
             <section class="why-choose-us py-12 bg-white">
@@ -233,20 +260,27 @@
         <div x-show="view === 'products'" style="display: none;">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div class="mb-6"><a href="#" @click.prevent="view = 'home'" class="text-lg font-semibold text-[var(--primary-color)] hover:underline flex items-center"><i class="ri-arrow-left-s-line mr-1 text-2xl"></i> Back to Home</a></div>
-                <h1 class="text-3xl font-bold text-gray-800 mb-8">All Courses</h1>
+                <h1 class="text-3xl font-bold text-gray-800 mb-8">All Products</h1>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
-                    <!-- Product Card 1 -->
-                    <div class="product-grid-card"><div class="h-28 md:h-40 flex items-center justify-center bg-gradient-to-r from-blue-400 to-blue-600"><i class="ri-html5-fill text-4xl md:text-5xl text-white"></i></div><div class="p-3 sm:p-4 flex flex-col flex-grow"><h3 class="text-base md:text-lg font-bold text-gray-800 mb-1">Web Dev Basics</h3><p class="text-xs sm:text-sm text-gray-600 mb-2 md:mb-4 flex-grow">A comprehensive intro to HTML, CSS, & JavaScript.</p><p class="text-lg md:text-xl font-extrabold text-[var(--primary-color)] mb-3 md:mb-4">$29.99</p><div class="flex flex-col sm:flex-row gap-2"><button @click.prevent="view = 'checkout'" class="w-full bg-[var(--primary-color)] text-white py-2 rounded-md hover:bg-[var(--primary-color-darker)] transition text-sm font-semibold">Buy Now</button><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition text-sm font-semibold">View Details</button></div></div></div>
-                    <!-- Product Card 2 -->
-                    <div class="product-grid-card"><div class="h-28 md:h-40 flex items-center justify-center bg-gradient-to-r from-green-400 to-green-600"><i class="ri-javascript-fill text-4xl md:text-5xl text-white"></i></div><div class="p-3 sm:p-4 flex flex-col flex-grow"><h3 class="text-base md:text-lg font-bold text-gray-800 mb-1">Advanced JS</h3><p class="text-xs sm:text-sm text-gray-600 mb-2 md:mb-4 flex-grow">Master modern JavaScript concepts like async/await.</p><p class="text-lg md:text-xl font-extrabold text-[var(--primary-color)] mb-3 md:mb-4">$89.99</p><div class="flex flex-col sm:flex-row gap-2"><button @click.prevent="view = 'checkout'" class="w-full bg-[var(--primary-color)] text-white py-2 rounded-md hover:bg-[var(--primary-color-darker)] transition text-sm font-semibold">Buy Now</button><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition text-sm font-semibold">View Details</button></div></div></div>
-                    <!-- Product Card 3 (Stock Out) -->
-                    <div class="product-grid-card"><div class="h-28 md:h-40 flex items-center justify-center bg-gradient-to-r from-purple-400 to-purple-600 relative"><div class="stock-out-badge">Stock Out</div><i class="ri-reactjs-line text-4xl md:text-5xl text-white"></i></div><div class="p-3 sm:p-4 flex flex-col flex-grow"><h3 class="text-base md:text-lg font-bold text-gray-800 mb-1">React Framework</h3><p class="text-xs sm:text-sm text-gray-600 mb-2 md:mb-4 flex-grow">Build modern, dynamic user interfaces with React.</p><p class="text-lg md:text-xl font-extrabold text-[var(--primary-color)] mb-3 md:mb-4">$199.99</p><div class="flex flex-col sm:flex-row gap-2"><button class="w-full bg-[var(--primary-color)] text-white py-2 rounded-md transition text-sm font-semibold disabled:opacity-50 cursor-not-allowed" disabled>Buy Now</button><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition text-sm font-semibold">View Details</button></div></div></div>
-                    <!-- Product Card 4 -->
-                    <div class="product-grid-card"><div class="h-28 md:h-40 flex items-center justify-center bg-gradient-to-r from-yellow-400 to-yellow-600"><i class="ri-server-line text-4xl md:text-5xl text-white"></i></div><div class="p-3 sm:p-4 flex flex-col flex-grow"><h3 class="text-base md:text-lg font-bold text-gray-800 mb-1">Node.js Backend</h3><p class="text-xs sm:text-sm text-gray-600 mb-2 md:mb-4 flex-grow">Build scalable server-side applications with Node.js.</p><p class="text-lg md:text-xl font-extrabold text-[var(--primary-color)] mb-3 md:mb-4">$59.99</p><div class="flex flex-col sm:flex-row gap-2"><button @click.prevent="view = 'checkout'" class="w-full bg-[var(--primary-color)] text-white py-2 rounded-md hover:bg-[var(--primary-color-darker)] transition text-sm font-semibold">Buy Now</button><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition text-sm font-semibold">View Details</button></div></div></div>
-                    <!-- Product Card 5 (Stock Out) -->
-                    <div class="product-grid-card"><div class="h-28 md:h-40 flex items-center justify-center bg-gradient-to-r from-red-400 to-red-600 relative"><div class="stock-out-badge">Stock Out</div><i class="ri-pencil-ruler-2-line text-4xl md:text-5xl text-white"></i></div><div class="p-3 sm:p-4 flex flex-col flex-grow"><h3 class="text-base md:text-lg font-bold text-gray-800 mb-1">UI/UX Design</h3><p class="text-xs sm:text-sm text-gray-600 mb-2 md:mb-4 flex-grow">Master design principles with Figma & Adobe XD.</p><p class="text-lg md:text-xl font-extrabold text-[var(--primary-color)] mb-3 md:mb-4">$79.99</p><div class="flex flex-col sm:flex-row gap-2"><button class="w-full bg-[var(--primary-color)] text-white py-2 rounded-md transition text-sm font-semibold disabled:opacity-50 cursor-not-allowed" disabled>Buy Now</button><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition text-sm font-semibold">View Details</button></div></div></div>
-                    <!-- Product Card 6 -->
-                    <div class="product-grid-card"><div class="h-28 md:h-40 flex items-center justify-center bg-gradient-to-r from-indigo-400 to-indigo-600"><i class="ri-database-2-line text-4xl md:text-5xl text-white"></i></div><div class="p-3 sm:p-4 flex flex-col flex-grow"><h3 class="text-base md:text-lg font-bold text-gray-800 mb-1">Databases</h3><p class="text-xs sm:text-sm text-gray-600 mb-2 md:mb-4 flex-grow">Dive into database management with SQL and NoSQL.</p><p class="text-lg md:text-xl font-extrabold text-[var(--primary-color)] mb-3 md:mb-4">$49.99</p><div class="flex flex-col sm:flex-row gap-2"><button @click.prevent="view = 'checkout'" class="w-full bg-[var(--primary-color)] text-white py-2 rounded-md hover:bg-[var(--primary-color-darker)] transition text-sm font-semibold">Buy Now</button><button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition text-sm font-semibold">View Details</button></div></div></div>
+                    <template x-for="product in products" :key="product.id">
+                        <div class="product-grid-card">
+                            <div class="h-28 md:h-40 flex items-center justify-center bg-gradient-to-r" :class="product.color">
+                                <template x-if="product.stock_out">
+                                    <div class="stock-out-badge">Stock Out</div>
+                                </template>
+                                <i class="text-4xl md:text-5xl text-white" :class="product.icon"></i>
+                            </div>
+                            <div class="p-3 sm:p-4 flex flex-col flex-grow">
+                                <h3 class="text-base md:text-lg font-bold text-gray-800 mb-1" x-text="product.name"></h3>
+                                <p class="text-xs sm:text-sm text-gray-600 mb-2 md:mb-4 flex-grow" x-text="product.description"></p>
+                                <p class="text-lg md:text-xl font-extrabold text-[var(--primary-color)] mb-3 md:mb-4" x-text="'$' + product.price"></p>
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <button @click.prevent="view = 'checkout'" class="w-full bg-[var(--primary-color)] text-white py-2 rounded-md hover:bg-[var(--primary-color-darker)] transition text-sm font-semibold" :disabled="product.stock_out">Buy Now</button>
+                                    <button @click.prevent="view = 'productDetail'" class="w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition text-sm font-semibold">View Details</button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -418,7 +452,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                     <!-- Left: Product Image -->
                     <div class="bg-gradient-to-br from-green-400 to-green-600 rounded-2xl shadow-lg flex items-center justify-center aspect-square md:aspect-auto">
-                        <i class="ri-javascript-fill text-9xl text-white"></i>
+                        <i class="ri-javascript-.fill text-9xl text-white"></i>
                     </div>
 
                     <!-- Right: Product Info -->
