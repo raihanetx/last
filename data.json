@@ -1,0 +1,101 @@
+{
+  "categories": [
+    {
+      "id": "cat1",
+      "name": "Course",
+      "icon": "fas fa-graduation-cap"
+    },
+    {
+      "id": "cat2",
+      "name": "Subscription",
+      "icon": "fas fa-crown"
+    },
+    {
+      "id": "cat3",
+      "name": "Software",
+      "icon": "fas fa-th-large"
+    },
+    {
+      "id": "cat4",
+      "name": "eBook",
+      "icon": "fas fa-book-open"
+    },
+    {
+      "id": "cat5",
+      "name": "Resources",
+      "icon": "fas fa-archive"
+    },
+    {
+      "id": "cat6",
+      "name": "Templates",
+      "icon": "fas fa-layer-group"
+    },
+    {
+      "id": "cat7",
+      "name": "Plugins",
+      "icon": "fas fa-plug"
+    }
+  ],
+  "products": [
+    {
+      "id": "prod1",
+      "categoryId": "cat1",
+      "name": "Web Dev Basics",
+      "description": "HTML, CSS, & JS",
+      "price": 29.99,
+      "icon": "ri-html5-fill",
+      "color": "from-blue-400 to-blue-600",
+      "stock_out": false
+    },
+    {
+      "id": "prod2",
+      "categoryId": "cat1",
+      "name": "Advanced JS",
+      "description": "Modern JS concepts",
+      "price": 89.99,
+      "icon": "ri-javascript-fill",
+      "color": "from-green-400 to-green-600",
+      "stock_out": false
+    },
+    {
+      "id": "prod3",
+      "categoryId": "cat1",
+      "name": "React Framework",
+      "description": "Build UIs with React",
+      "price": 199.99,
+      "icon": "ri-reactjs-line",
+      "color": "from-purple-400 to-purple-600",
+      "stock_out": true
+    },
+    {
+      "id": "prod4",
+      "categoryId": "cat1",
+      "name": "Node.js Backend",
+      "description": "Node.js for backend",
+      "price": 59.99,
+      "icon": "ri-server-line",
+      "color": "from-yellow-400 to-yellow-600",
+      "stock_out": false
+    },
+    {
+      "id": "prod5",
+      "categoryId": "cat1",
+      "name": "UI/UX Design",
+      "description": "Master design principles with Figma & Adobe XD.",
+      "price": 79.99,
+      "icon": "ri-pencil-ruler-2-line",
+      "color": "from-red-400 to-red-600",
+      "stock_out": true
+    },
+    {
+      "id": "prod6",
+      "categoryId": "cat1",
+      "name": "Databases",
+      "description": "Dive into database management with SQL and NoSQL.",
+      "price": 49.99,
+      "icon": "ri-database-2-line",
+      "color": "from-indigo-400 to-indigo-600",
+      "stock_out": false
+    }
+  ]
+}
